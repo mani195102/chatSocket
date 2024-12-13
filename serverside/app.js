@@ -1,3 +1,5 @@
+require("dotenv").config(); // Load environment variables from .env
+
 const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
@@ -16,14 +18,17 @@ const io = new Server(server, {
   },
 });
 
-const secret_key = "1234567manimuthu"; // Use consistently for JWT
+// Environment variables
+const MONGO_URI = process.env.MONGO_URI;
+const JWT_SECRET = process.env.JWT_SECRET;
+const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(cors());
 app.use(bodyParser.json());
 
 // MongoDB Connection
-mongoose.connect("mongodb://localhost:27017/chatapp", {})
+mongoose.connect(MONGO_URI, {})
   .then(() => console.log("MongoDB connected"))
   .catch(err => console.error("MongoDB connection error:", err));
 
@@ -44,7 +49,6 @@ const messageSchema = new mongoose.Schema({
 
 const Message = mongoose.model("Message", messageSchema);
 
-
 // User Registration
 app.post("/register", async (req, res) => {
   const { username, password } = req.body;
@@ -54,16 +58,12 @@ app.post("/register", async (req, res) => {
   }
 
   try {
-    // Check if the username already exists
     const existingUser = await User.findOne({ username });
     if (existingUser) {
       return res.status(400).json({ error: "Username already exists" });
     }
 
-    // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Create and save a new user
     const newUser = new User({ username, password: hashedPassword });
     await newUser.save();
 
@@ -79,14 +79,12 @@ app.post("/login", async (req, res) => {
   const { username, password } = req.body;
 
   try {
-    // Validate user credentials
     const user = await User.findOne({ username });
     if (!user || !(await bcrypt.compare(password, user.password))) {
       return res.status(400).json({ error: "Invalid credentials" });
     }
 
-    // Generate a JWT token
-    const token = jwt.sign({ username }, secret_key, { expiresIn: "1h" });
+    const token = jwt.sign({ username }, JWT_SECRET, { expiresIn: "1h" });
 
     res.status(200).json({ token, username });
   } catch (error) {
@@ -122,7 +120,6 @@ io.on("connection", (socket) => {
     connectedUsers[username] = socket.id;
     console.log(`${username} is now online.`);
 
-    // Emit the updated list of online users to all connected clients
     io.emit("update_online_users", Object.keys(connectedUsers));
   });
 
@@ -137,7 +134,6 @@ io.on("connection", (socket) => {
       }
     }
 
-    // Emit the updated list of online users after someone disconnects
     io.emit("update_online_users", Object.keys(connectedUsers));
   });
 
@@ -145,9 +141,8 @@ io.on("connection", (socket) => {
     console.log("Private message data:", { sender, receiver, message });
 
     const receiverSocketId = connectedUsers[receiver];
-
-    // Save the message to the database (optional)
     const newMessage = new Message({ sender, receiver, message });
+
     try {
       await newMessage.save();
       console.log("Message saved to database:", newMessage);
@@ -155,16 +150,13 @@ io.on("connection", (socket) => {
       console.error("Error saving message:", error);
     }
 
-    // Send the message to the receiver if they are online
     if (receiverSocketId) {
       io.to(receiverSocketId).emit("receive_message", { sender, message });
     }
 
-    // Optionally, send acknowledgment back to the sender
     socket.emit("message_sent", { message });
   });
 });
 
 // Start the server
-const PORT = 5000;
 server.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
