@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Box, TextField, Button, MenuItem, Select, InputLabel, FormControl } from "@mui/material";
 import { io } from "socket.io-client";
 
-const socket = io("http://localhost:5000");
+const socket = io("https://chatsocket-tg3j.onrender.com");
 
 const ChatForm = ({ onSend }) => {
   const [message, setMessage] = useState("");

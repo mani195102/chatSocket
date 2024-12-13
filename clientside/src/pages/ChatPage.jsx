@@ -13,7 +13,7 @@ const ChatPage = () => {
 
   useEffect(() => {
     // Initialize socket connection and store it in the ref
-    socketRef.current = io("http://localhost:5000");
+    socketRef.current = io("https://chatsocket-tg3j.onrender.com");
 
     // Listen for the connection event
     socketRef.current.on("connect", () => {

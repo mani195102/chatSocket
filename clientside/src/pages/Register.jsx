@@ -10,7 +10,7 @@ const Register = () => {
 
   const handleRegister = async () => {
     try {
-      await axios.post("http://localhost:5000/register", { username, password });
+      await axios.post("https://chatsocket-tg3j.onrender.com/register", { username, password });
       alert("Registration successful");
       navigate("/login");
     } catch (error) {

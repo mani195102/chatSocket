@@ -10,7 +10,7 @@ const Login = () => {
 
   const handleLogin = async () => {
     try {
-      const { data } = await axios.post("http://localhost:5000/login", {
+      const { data } = await axios.post("https://chatsocket-tg3j.onrender.com/login", {
         username,
         password,
       });
