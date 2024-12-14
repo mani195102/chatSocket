@@ -21,21 +21,25 @@ const ChatForm = ({ onSend }) => {
     };
   }, []);
 
-  const handleSend = () => {
-    if (message.trim() && receiver.trim()) {
-      onSend(message, receiver); // Send both message and receiver
+  const handleSend = (customMessage = message, customReceiver = receiver) => {
+    if (customMessage.trim() && customReceiver.trim()) {
+      onSend(customMessage, customReceiver); // Send both message and receiver
       setMessage(""); // Clear message input
     }
   };
 
   const handleReceiverChange = (event) => {
     const newReceiver = event.target.value;
-    console.log("Receiver changed to:", newReceiver);
+
+    // Send the current message for the old receiver if any
+    if (message.trim() && receiver.trim()) {
+      handleSend(message, receiver);
+    }
+
+    // Update the receiver and clear the message input
     setReceiver(newReceiver);
-    setMessage("");
-    console.log("Message cleared");
+    setMessage(""); // Clear the input for the new receiver
   };
-  
 
   return (
     <Box
@@ -51,7 +55,7 @@ const ChatForm = ({ onSend }) => {
         <InputLabel>Receiver</InputLabel>
         <Select
           value={receiver}
-          onChange={handleReceiverChange} // Clear message when receiver changes
+          onChange={handleReceiverChange} // Trigger on receiver change
           label="Receiver"
         >
           {onlineUsers.map((user) => (
@@ -76,7 +80,7 @@ const ChatForm = ({ onSend }) => {
       <Button
         variant="contained"
         color="primary"
-        onClick={handleSend}
+        onClick={() => handleSend()} // Manually trigger send
         disabled={!message.trim() || !receiver.trim()} // Disable if input is empty
       >
         Send

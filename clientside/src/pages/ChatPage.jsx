@@ -6,9 +6,9 @@ import ChatForm from "../components/ChatForm";
 
 const ChatPage = () => {
   const [messages, setMessages] = useState([]);
-  const [receiver, setReceiver] = useState("");
+  const [receiver, setReceiver] = useState(""); 
   const username = localStorage.getItem("username");
-  
+
   const socketRef = useRef(null);  // Store socket in useRef to maintain connection
 
   useEffect(() => {
@@ -35,25 +35,25 @@ const ChatPage = () => {
       socketRef.current.disconnect();
     };
   }, [username]);
+
+  // Reset the chat messages when receiver changes
   useEffect(() => {
-    setMessages([]); // Clear chat messages
+    setMessages([]); // Clear messages when switching users
   }, [receiver]);
-            
+
   // Handle sending a message
   const handleSend = (message, receiver) => {
-    if (socketRef.current && receiver) {    
+    if (socketRef.current && receiver) {
       const msg = { sender: username, receiver, message };
-  
-      
+
       if (username === receiver) {
-        setMessages((prev) => [...prev, msg]); 
+        setMessages((prev) => [...prev, msg]);
       } else {
-        socketRef.current.emit("private_message", msg); 
-        setMessages((prev) => [...prev, msg]); 
+        socketRef.current.emit("private_message", msg);
+        setMessages((prev) => [...prev, msg]);
       }
     }
   };
-  
 
   return (
     <Box
