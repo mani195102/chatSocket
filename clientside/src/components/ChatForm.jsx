@@ -1,39 +1,41 @@
 import React, { useState, useEffect } from "react";
-import { io } from "socket.io-client";
 import { Box, TextField, Button, MenuItem, Select, InputLabel, FormControl } from "@mui/material";
+import { io } from "socket.io-client";
 
-const ChatForm = ({ onSend, setReceiver }) => {
+const socket = io("https://chatsocket-tg3j.onrender.com");
+
+const ChatForm = ({ onSend }) => {
   const [message, setMessage] = useState("");
-  const [receiver, updateReceiver] = useState(""); // Manage the local receiver
+  const [receiver, setReceiver] = useState(""); // The selected receiver
   const [onlineUsers, setOnlineUsers] = useState([]); // List of online users
-  const socket = io("https://chatsocket-tg3j.onrender.com");
-  useEffect(() => {
-  
 
-    // Listen for updated online users
+  useEffect(() => {
+    // Listen for the updated list of online users
     socket.on("update_online_users", (users) => {
       setOnlineUsers(users);
     });
 
-    // Clean up the socket listener when component unmounts
+    // Clean up the event listener on component unmount
     return () => {
-      socket.disconnect();
+      socket.off("update_online_users");
     };
   }, []);
 
-  // Handle receiver change
-  const handleReceiverChange = (e) => {
-    const selectedReceiver = e.target.value;
-    updateReceiver(selectedReceiver); // Update local receiver
-    setReceiver(selectedReceiver); // Update receiver in parent component
-  };
-
   const handleSend = () => {
     if (message.trim() && receiver.trim()) {
-      onSend(message, receiver); // Pass message and receiver to parent handler
+      onSend(message, receiver); // Send both message and receiver
       setMessage(""); // Clear message input
     }
   };
+
+  const handleReceiverChange = (event) => {
+    const newReceiver = event.target.value;
+    console.log("Receiver changed to:", newReceiver);
+    setReceiver(newReceiver);
+    setMessage("");
+    console.log("Message cleared");
+  };
+  
 
   return (
     <Box
@@ -44,11 +46,12 @@ const ChatForm = ({ onSend, setReceiver }) => {
         borderTop: "1px solid #ccc",
       }}
     >
+      {/* Receiver Dropdown */}
       <FormControl fullWidth sx={{ marginRight: "10px" }}>
         <InputLabel>Receiver</InputLabel>
         <Select
           value={receiver}
-          onChange={handleReceiverChange} // Handle receiver change
+          onChange={handleReceiverChange} // Clear message when receiver changes
           label="Receiver"
         >
           {onlineUsers.map((user) => (
@@ -59,15 +62,23 @@ const ChatForm = ({ onSend, setReceiver }) => {
         </Select>
       </FormControl>
 
+      {/* Message Input */}
       <TextField
         label="Type a message"
         variant="outlined"
         fullWidth
         value={message}
-        onChange={(e) => setMessage(e.target.value)} // Update message
+        onChange={(e) => setMessage(e.target.value)} // Update the message state
         sx={{ marginRight: "10px" }}
       />
-      <Button variant="contained" color="primary" onClick={handleSend}>
+
+      {/* Send Button */}
+      <Button
+        variant="contained"
+        color="primary"
+        onClick={handleSend}
+        disabled={!message.trim() || !receiver.trim()} // Disable if input is empty
+      >
         Send
       </Button>
     </Box>

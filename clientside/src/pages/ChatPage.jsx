@@ -35,6 +35,9 @@ const ChatPage = () => {
       socketRef.current.disconnect();
     };
   }, [username]);
+  useEffect(() => {
+    setMessages([]); // Clear chat messages
+  }, [receiver]);
             
   // Handle sending a message
   const handleSend = (message, receiver) => {
