@@ -6,9 +6,9 @@ const ChatForm = ({ onSend, setReceiver }) => {
   const [message, setMessage] = useState("");
   const [receiver, updateReceiver] = useState(""); // Manage the local receiver
   const [onlineUsers, setOnlineUsers] = useState([]); // List of online users
-
+  const socket = io("https://chatsocket-tg3j.onrender.com");
   useEffect(() => {
-    const socket = io("https://chatsocket-tg3j.onrender.com");
+  
 
     // Listen for updated online users
     socket.on("update_online_users", (users) => {
