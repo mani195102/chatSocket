@@ -39,11 +39,18 @@ const ChatPage = () => {
   // Handle sending a message
   const handleSend = (message, receiver) => {
     if (socketRef.current && receiver) {    
-      const msg = { sender: username, receiver: receiver, message };
-      socketRef.current.emit("private_message", msg);  // Use the socket reference
-      setMessages((prev) => [...prev, msg]);
+      const msg = { sender: username, receiver, message };
+  
+      
+      if (username === receiver) {
+        setMessages((prev) => [...prev, msg]); 
+      } else {
+        socketRef.current.emit("private_message", msg); 
+        setMessages((prev) => [...prev, msg]); 
+      }
     }
   };
+  
 
   return (
     <Box
